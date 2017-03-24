@@ -17,7 +17,6 @@
         android:layout_centerHorizontal="true"
         android:fontFamily="sans-serif-condensed"
         android:hint="@string/hint1"
-        android:textAlignment="center"
         android:gravity="center"
         android:textSize="30sp"
         android:textStyle="bold"
