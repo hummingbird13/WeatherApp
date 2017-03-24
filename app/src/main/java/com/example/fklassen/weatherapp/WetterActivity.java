@@ -3,6 +3,7 @@ package com.example.fklassen.weatherapp;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.Icon;
 import android.media.Image;
 import android.os.Bundle;
 import android.support.annotation.DrawableRes;
@@ -81,13 +82,15 @@ public class WetterActivity extends Activity {
                 try{
                     Log.i(TAG4LOGGING, "Im Thread");
                     jsonResponse = holeDatenVonAPI(_ort);
+
                 }catch(Exception e){
                     //TODO: Exception behandeln
+                    Log.e("App_Err",Log.getStackTraceString(e));
                 }
 
                 try{
-                    parseJSON(jsonResponse);
-                   //Log.i(TAG4LOGGING, "Ausgabe ausgeben" + ausgabe);
+                    iconSetzen(parseJSON(jsonResponse));
+                    Log.i(TAG4LOGGING, "Icon gesetzt");
                 }catch(Exception e){
                     //TODO: Exception behandeln
                 }
@@ -150,7 +153,7 @@ public class WetterActivity extends Activity {
              * *****************************************************************************************
              */
 
-            public void parseJSON(String jsonString) throws Exception {
+            public String parseJSON(String jsonString) throws Exception {
 
                 //Temperatur holen
                 JSONObject jsonObject = new JSONObject(jsonString);
@@ -158,8 +161,10 @@ public class WetterActivity extends Activity {
                 JSONObject mainObj = jsonObject.getJSONObject("main");
                 final Integer temp = mainObj.getInt("temp");
 
-                Log.i(TAG4LOGGING, "Icon ID: "+icon);
+                JSONObject weatherObj = jsonObject.getJSONObject("weather");
+                final String icon = weatherObj.getString("icon");
 
+                Log.i(TAG4LOGGING, "Icon ID: "+icon);
 
 
                 Log.i(TAG4LOGGING, "Ich bin am parsen "+temp);
@@ -171,9 +176,10 @@ public class WetterActivity extends Activity {
                     @Override
                     public void run() {
                         wetter.setText(temp.toString() + "°C");
+
                     }
                 });
-
+                return icon;
 
 
 
@@ -216,12 +222,8 @@ public class WetterActivity extends Activity {
 
     //Icon-Code holen
 
-    iconSetzen(icon);
 
-    JSONObject weatherObj = jsonObject.getJSONObject("weather");
-    final String icon = weatherObj.getString("icon");
-
-    public String iconSetzen(String i) {
+    public void iconSetzen(String i) {
         switch (i) {
             case "01d":
                 icon.setImageResource(R.drawable.x01d);
