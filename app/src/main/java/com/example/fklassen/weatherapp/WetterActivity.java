@@ -59,7 +59,7 @@ public class WetterActivity extends Activity {
         Log.i(TAG4LOGGING, "intent "+ ort);
 
         beschreibung.setText(ort.toString());
-        //icon.setText(intent.getStringExtra("Ort"));
+
 
 
 
@@ -80,8 +80,7 @@ public class WetterActivity extends Activity {
 
             @Override
             public void run(){
-                //In ein try packen weil es sonst sein kann dass du mit ner Null-Referenz weiter arbeitest und das dann sicher ne Exception gibt
-                
+
                 try{
                     Log.i(TAG4LOGGING, "Im Thread");
                     jsonResponse = holeDatenVonAPI(_ort);
@@ -98,6 +97,12 @@ public class WetterActivity extends Activity {
                     
                 
             }
+
+            /**
+             * *****************************************************************************************
+             * ***Start JSON abholen
+             * *****************************************************************************************
+             */
 
 
             public String holeDatenVonAPI(String ort) throws Exception{
@@ -210,7 +215,6 @@ public class WetterActivity extends Activity {
 
         //Thread starten, in dem der http Request abgesetzt wird
         MeinThread meinThread = new MeinThread(intent.getStringExtra("Ort"));
-
         meinThread.start();
 
 
@@ -224,9 +228,6 @@ public class WetterActivity extends Activity {
      * ***START Icons abrufen und einbinden
      * *****************************************************************************************
      */
-
-
-    //Icon-Code holen
 
 
     public void iconSetzen(String i) {
@@ -259,35 +260,35 @@ public class WetterActivity extends Activity {
                 icon.setImageResource(R.drawable.x09d);
                 break;
             case "09n":
-                icon.setImageResource(R.drawable.x01d);
+                icon.setImageResource(R.drawable.x09n);
                 break;
             case "10d":
-                icon.setImageResource(R.drawable.x01d);
+                icon.setImageResource(R.drawable.x10d);
                 break;
             case "10n":
-                icon.setImageResource(R.drawable.x01d);
+                icon.setImageResource(R.drawable.x10n);
                 break;
             case "11d":
-                icon.setImageResource(R.drawable.x01d);
+                icon.setImageResource(R.drawable.x11d);
                 break;
             case "11n":
-                icon.setImageResource(R.drawable.x01d);
+                icon.setImageResource(R.drawable.x11n);
                 break;
             case "13d":
-                icon.setImageResource(R.drawable.x01d);
+                icon.setImageResource(R.drawable.x13d);
                 break;
             case "13n":
-                icon.setImageResource(R.drawable.x01d);
+                icon.setImageResource(R.drawable.x13n);
                 break;
             case "50d":
-                icon.setImageResource(R.drawable.x01d);
+                icon.setImageResource(R.drawable.x50d);
                 break;
             case "50n":
-                icon.setImageResource(R.drawable.x01d);
+                icon.setImageResource(R.drawable.x50n);
                 break;
             default:
                 //Was passiert, wenn kein Code kommt?
-                icon.setImageResource(R.drawable.x01d);
+                //icon.setImageResource(R.drawable.x01d);
                 break;
         }
     }
