@@ -18,6 +18,7 @@ import com.google.api.client.http.HttpResponse;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.w3c.dom.Text;
@@ -85,6 +86,7 @@ public class WetterActivity extends Activity {
                     Log.i(TAG4LOGGING, "Im Thread");
                     jsonResponse = holeDatenVonAPI(_ort);
                     iconSetzen(parseJSON(jsonResponse));
+
                     Log.i(TAG4LOGGING, "Icon gesetzt");
 
                 }catch(Exception e){
@@ -159,13 +161,16 @@ public class WetterActivity extends Activity {
                 //Temperatur holen
                 JSONObject jsonObject = new JSONObject(jsonString);
 
+
+
                 JSONObject mainObj = jsonObject.getJSONObject("main");
                 final Integer temp = mainObj.getInt("temp");
 
-                JSONObject weatherObj = jsonObject.getJSONObject("weather");
+                JSONArray weatherArray = jsonObject.getJSONArray("weather");
+                JSONObject weatherObj = weatherArray.getJSONObject(0);
                 final String icon = weatherObj.getString("icon");
 
-                Log.i(TAG4LOGGING, "Icon ID: "+icon);
+                Log.i(TAG4LOGGING, "Icon ID: "+ icon);
 
 
                 Log.i(TAG4LOGGING, "Ich bin am parsen "+temp);
@@ -230,28 +235,28 @@ public class WetterActivity extends Activity {
                 icon.setImageResource(R.drawable.x01d);
                  break;
             case "01n":
-                icon.setImageResource(R.drawable.x01d);
+                icon.setImageResource(R.drawable.x01n);
                 break;
             case "02d":
-                icon.setImageResource(R.drawable.x01d);
+                icon.setImageResource(R.drawable.x02d);
                 break;
             case "02n":
-                icon.setImageResource(R.drawable.x01d);
+                icon.setImageResource(R.drawable.x02n);
                 break;
             case "03d":
-                icon.setImageResource(R.drawable.x01d);
+                icon.setImageResource(R.drawable.x03d);
                 break;
             case "03n":
-                icon.setImageResource(R.drawable.x01d);
+                icon.setImageResource(R.drawable.x03n);
                 break;
             case "04d":
-                icon.setImageResource(R.drawable.x01d);
+                icon.setImageResource(R.drawable.x04d);
                 break;
             case "04n":
-                icon.setImageResource(R.drawable.x01d);
+                icon.setImageResource(R.drawable.x04n);
                 break;
             case "09d":
-                icon.setImageResource(R.drawable.x01d);
+                icon.setImageResource(R.drawable.x09d);
                 break;
             case "09n":
                 icon.setImageResource(R.drawable.x01d);
