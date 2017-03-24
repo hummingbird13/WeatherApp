@@ -79,21 +79,22 @@ public class WetterActivity extends Activity {
 
             @Override
             public void run(){
+                //In ein try packen weil es sonst sein kann dass du mit ner Null-Referenz weiter arbeitest und das dann sicher ne Exception gibt
+                
                 try{
                     Log.i(TAG4LOGGING, "Im Thread");
                     jsonResponse = holeDatenVonAPI(_ort);
+                    iconSetzen(parseJSON(jsonResponse));
+                    Log.i(TAG4LOGGING, "Icon gesetzt");
 
                 }catch(Exception e){
                     //TODO: Exception behandeln
                     Log.e("App_Err",Log.getStackTraceString(e));
                 }
 
-                try{
-                    iconSetzen(parseJSON(jsonResponse));
-                    Log.i(TAG4LOGGING, "Icon gesetzt");
-                }catch(Exception e){
-                    //TODO: Exception behandeln
-                }
+                
+                    
+                
             }
 
 
