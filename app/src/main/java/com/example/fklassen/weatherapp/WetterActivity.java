@@ -2,8 +2,12 @@ package com.example.fklassen.weatherapp;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
+import android.media.Image;
 import android.os.Bundle;
+import android.support.annotation.DrawableRes;
 import android.util.Log;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.api.client.http.GenericUrl;
@@ -15,6 +19,7 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 /**
  * Created by fklassen on 22.03.2017.
@@ -31,21 +36,29 @@ public class WetterActivity extends Activity {
 
     //Member Variablen
     protected TextView wetter;
+    protected TextView beschreibung;
+    protected ImageView icon;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_wetter);
 
-        Log.i(TAG4LOGGING, "willkomemen in activity 2 ");
+        Log.i(TAG4LOGGING, "Willkommen in activity 2 ");
+
         wetter = (TextView) findViewById(R.id.wetter);
+        beschreibung = (TextView) findViewById(R.id.beschreibung);
+        icon = (ImageView) findViewById(R.id.icon);
+
 
         Intent intent = getIntent();
-
         String ort = intent.getStringExtra("Ort");
 
-        Log.i(TAG4LOGGING, "intent "+ort);
-        //wetter.setText(intent.getStringExtra("Ort"));
+        Log.i(TAG4LOGGING, "intent "+ ort);
+
+        beschreibung.setText(ort.toString());
+        //icon.setText(intent.getStringExtra("Ort"));
+
 
 
         /**
@@ -84,13 +97,18 @@ public class WetterActivity extends Activity {
             public String holeDatenVonAPI(String ort) throws Exception{
 
                 Log.i(TAG4LOGGING, "In holeDatenVonAPI Methode");
+
                 //Schritt 1: Request Factory holen
                 HttpTransport httpTransport = new NetHttpTransport();
                 HttpRequestFactory requestFactory = httpTransport.createRequestFactory();
 
                 Log.i(TAG4LOGGING, "Schritt 1 beendet");
+
                 //Schritt 2: URL erzeugen und Parameter hinzufügen
                 //Link: api.openweathermap.org/data/2.5/weather?q=City&units=metric&APPID=31f9d45c5d615fabdac3b88c54c9b7b2
+
+
+
                 GenericUrl url = new GenericUrl("http://api.openweathermap.org/data/2.5/weather");
                 Log.i(TAG4LOGGING, "Generic Url beendet"+ url);
                 url.put("q", ort);
@@ -99,8 +117,6 @@ public class WetterActivity extends Activity {
                 Log.i(TAG4LOGGING, "units " + units);
                 url.put("APPID",key_API);
                 Log.i(TAG4LOGGING, "APPID " + key_API);
-
-
                 Log.i(TAG4LOGGING, "URL erzeugt: " + url);
 
                 //Schritt 3: Absetzen des Requests
@@ -136,22 +152,28 @@ public class WetterActivity extends Activity {
 
             public void parseJSON(String jsonString) throws Exception {
 
+                //Temperatur holen
                 JSONObject jsonObject = new JSONObject(jsonString);
+
                 JSONObject mainObj = jsonObject.getJSONObject("main");
-                final Double temp = mainObj.getDouble("temp");
+                final Integer temp = mainObj.getInt("temp");
+
+                Log.i(TAG4LOGGING, "Icon ID: "+icon);
+
+
 
                 Log.i(TAG4LOGGING, "Ich bin am parsen "+temp);
                 //TODO: gesuchte Attribute Abfragen
 
                 //TODO: String für die Ausgabe auf der Activity erzeugen und zur Anzeige bringen
-                //wetter.setText(intent.getStringExtra("JSON"));
 
                 wetter.post(new Runnable() {
                     @Override
                     public void run() {
-                        wetter.setText(temp.toString());
+                        wetter.setText(temp.toString() + "°C");
                     }
                 });
+
 
 
 
@@ -176,6 +198,7 @@ public class WetterActivity extends Activity {
 
         //Thread starten, in dem der http Request abgesetzt wird
         MeinThread meinThread = new MeinThread(intent.getStringExtra("Ort"));
+
         meinThread.start();
 
 
@@ -186,9 +209,87 @@ public class WetterActivity extends Activity {
 
     /**
      * *****************************************************************************************
-     * ***START JSON abholen
+     * ***START Icons abrufen und einbinden
      * *****************************************************************************************
      */
+
+
+    //Icon-Code holen
+
+    iconSetzen(icon);
+
+    JSONObject weatherObj = jsonObject.getJSONObject("weather");
+    final String icon = weatherObj.getString("icon");
+
+    public String iconSetzen(String i) {
+        switch (i) {
+            case "01d":
+                icon.setImageResource(R.drawable.x01d);
+                 break;
+            case "01n":
+                icon.setImageResource(R.drawable.x01d);
+                break;
+            case "02d":
+                icon.setImageResource(R.drawable.x01d);
+                break;
+            case "02n":
+                icon.setImageResource(R.drawable.x01d);
+                break;
+            case "03d":
+                icon.setImageResource(R.drawable.x01d);
+                break;
+            case "03n":
+                icon.setImageResource(R.drawable.x01d);
+                break;
+            case "04d":
+                icon.setImageResource(R.drawable.x01d);
+                break;
+            case "04n":
+                icon.setImageResource(R.drawable.x01d);
+                break;
+            case "09d":
+                icon.setImageResource(R.drawable.x01d);
+                break;
+            case "09n":
+                icon.setImageResource(R.drawable.x01d);
+                break;
+            case "10d":
+                icon.setImageResource(R.drawable.x01d);
+                break;
+            case "10n":
+                icon.setImageResource(R.drawable.x01d);
+                break;
+            case "11d":
+                icon.setImageResource(R.drawable.x01d);
+                break;
+            case "11n":
+                icon.setImageResource(R.drawable.x01d);
+                break;
+            case "13d":
+                icon.setImageResource(R.drawable.x01d);
+                break;
+            case "13n":
+                icon.setImageResource(R.drawable.x01d);
+                break;
+            case "50d":
+                icon.setImageResource(R.drawable.x01d);
+                break;
+            case "50n":
+                icon.setImageResource(R.drawable.x01d);
+                break;
+            default:
+                //Was passiert, wenn kein Code kommt?
+                icon.setImageResource(R.drawable.x01d);
+                break;
+        }
+    }
+
+
+    /**
+     * *****************************************************************************************
+     * ***Ende Icons abrufen und einbinden
+     * *****************************************************************************************
+     * */
 
 
 }
