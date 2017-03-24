@@ -16,13 +16,14 @@
         android:layout_above="@+id/weiter"
         android:layout_centerHorizontal="true"
         android:fontFamily="sans-serif-condensed"
-        android:hint="@string/hint1"
         android:gravity="center"
-        android:textSize="30sp"
-        android:textStyle="bold"
-        android:maxLines="1"
+        android:hint="@string/hint1"
+        android:imeOptions="actionGo"
         android:inputType="text"
-        android:imeOptions="actionGo"/>
+        android:maxLines="1"
+        android:textAlignment="center"
+        android:textSize="30sp"
+        android:textStyle="bold" />
 
     <Button
         android:id="@+id/weiter"
