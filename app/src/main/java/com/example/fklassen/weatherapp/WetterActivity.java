@@ -19,11 +19,15 @@ import com.google.api.client.http.HttpRequestFactory;
 import com.google.api.client.http.HttpResponse;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.repackaged.com.google.common.base.Throwables;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.w3c.dom.Text;
+
+import java.io.IOException;
+import java.net.UnknownHostException;
 
 /**
  * Created by fklassen on 22.03.2017.
@@ -44,11 +48,11 @@ public class WetterActivity extends Activity {
     protected ImageView icon;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState){
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_wetter);
 
-        Log.i(TAG4LOGGING, "Willkommen in activity 2 ");
+        Log.i(TAG4LOGGING, "Willkommen in activity 2");
 
         wetter = (TextView) findViewById(R.id.wetter);
         beschreibung = (TextView) findViewById(R.id.beschreibung);
@@ -58,12 +62,7 @@ public class WetterActivity extends Activity {
         Intent intent = getIntent();
         String ort = intent.getStringExtra("Ort");
 
-        Log.i(TAG4LOGGING, "intent "+ ort);
-
-
-
-
-
+        Log.i(TAG4LOGGING, "intent " + ort);
 
         /**
          * *****************************************************************************************
@@ -71,43 +70,41 @@ public class WetterActivity extends Activity {
          * *****************************************************************************************
          */
 
-        class MeinThread extends Thread{
+        class MeinThread extends Thread {
             protected String _ort;
             protected String jsonResponse;
+            protected String _iconID;
 
-            public MeinThread(String _location){
-                _ort   = _location;
+            public MeinThread(String _location) {
+                _ort = _location;
 
             }
 
             @Override
-            public void run(){
-
-                try{
+            public void run() {
+                try {
                     Log.i(TAG4LOGGING, "Im Thread");
                     jsonResponse = holeDatenVonAPI(_ort);
-                    iconSetzen(parseJSON(jsonResponse));
+                    parseJSON(jsonResponse);
 
                     Log.i(TAG4LOGGING, "Icon gesetzt" + icon);
 
-                }catch(Exception e){
-                    //TODO: Exception behandeln
-                    Log.e("App_Err",Log.getStackTraceString(e));
+                } catch (Exception e) {
+
+                    //TODO: Hier die Internetverbindung abfragen, bzw. behandeln?
+                    Log.e("App_Err", Log.getStackTraceString(e));
+                    Log.i(TAG4LOGGING, "Internet nicht erhalten");
+                    //iconSetzen("internet");
+                    wetter.setText("Bitte prüfen deine Internetverbindung");
                 }
-
-                
-                    
-                
             }
-
             /**
              * *****************************************************************************************
              * ***Start JSON abholen
              * *****************************************************************************************
              */
 
-
-            public String holeDatenVonAPI(String ort) throws Exception{
+            public String holeDatenVonAPI(String ort) throws Exception {
 
                 Log.i(TAG4LOGGING, "In holeDatenVonAPI Methode");
 
@@ -117,18 +114,16 @@ public class WetterActivity extends Activity {
 
                 Log.i(TAG4LOGGING, "Schritt 1 beendet");
 
-                //Schritt 2: URL erzeugen und Parameter hinzufügen
+                //Schritt 2: URL erzeugen und Parameter hinzufÃ¼gen
                 //Link: api.openweathermap.org/data/2.5/weather?q=City&units=metric&APPID=31f9d45c5d615fabdac3b88c54c9b7b2
 
-
-
                 GenericUrl url = new GenericUrl("http://api.openweathermap.org/data/2.5/weather");
-                Log.i(TAG4LOGGING, "Generic Url beendet"+ url);
+                Log.i(TAG4LOGGING, "Generic Url beendet" + url);
                 url.put("q", ort);
                 Log.i(TAG4LOGGING, "q " + ort);
                 url.put("units", units);
                 Log.i(TAG4LOGGING, "units " + units);
-                url.put("APPID",key_API);
+                url.put("APPID", key_API);
                 Log.i(TAG4LOGGING, "APPID " + key_API);
                 Log.i(TAG4LOGGING, "URL erzeugt: " + url);
 
@@ -139,13 +134,12 @@ public class WetterActivity extends Activity {
                 Log.i(TAG4LOGGING, "httpRequest execute" + httpRequest);
 
 
-                //Schritt 4: Antwort-String (JSON-Format) zurückgeben
+                //Schritt 4: Antwort-String (JSON-Format) zurÃ¼ckgeben
                 String jsonResponseString = httpResponse.parseAsString();
 
                 Log.i(TAG4LOGGING, "JSON-String erhalten: " + jsonResponseString);
 
                 return jsonResponseString;
-
             }
 
             /**
@@ -155,60 +149,53 @@ public class WetterActivity extends Activity {
              */
 
 
-
-
             /**
              * *****************************************************************************************
              * ***START JSON parsen
              * *****************************************************************************************
              */
 
-            public String parseJSON(String jsonString) throws Exception {
+            public void parseJSON(final String jsonString) throws Exception {
 
                 //cod holen
-                JSONObject jsonObject = new JSONObject(jsonString);
-                final Integer status = jsonObject.getInt("cod");
+                //JSONObject jsonObject = new JSONObject(jsonString);
+                //final Integer status = jsonObject.getInt("cod");
 
-                Log.i(TAG4LOGGING, "If Schleife3 " + status);
+                wetter.post(new Runnable() {
+                    @Override
+                    public void run() {
 
+                        try {
+                            JSONObject jsonObject = new JSONObject(jsonString);
+                            final Integer status = jsonObject.getInt("cod");
 
-                switch (status) {
-                    case 200:
-                        final String name = jsonObject.getString("name");
-                        beschreibung.setText(name);
+                            if (status != 200) {
+                                _iconID = "Fehler!";
+                                iconSetzen(_iconID);
+                                beschreibung.setText("Stadt nicht gefunden");
+                            } else {
+                                final String name = jsonObject.getString("name");
 
-                        JSONObject mainObj = jsonObject.getJSONObject("main");
-                        final Integer temp = mainObj.getInt("temp");
+                                JSONObject mainObj = jsonObject.getJSONObject("main");
+                                final Integer temp = mainObj.getInt("temp");
 
-                        JSONArray weatherArray = jsonObject.getJSONArray("weather");
-                        JSONObject weatherObj = weatherArray.getJSONObject(0);
-                        final String icon = weatherObj.getString("icon");
+                                JSONArray weatherArray = jsonObject.getJSONArray("weather");
+                                JSONObject weatherObj = weatherArray.getJSONObject(0);
 
-                        Log.i(TAG4LOGGING, "Icon ID: " + icon);
-                        Log.i(TAG4LOGGING, "Ich bin am parsen " + temp);
-                        //TODO: gesuchte Attribute Abfragen
+                                _iconID = weatherObj.getString("icon");
 
-                        //TODO: String für die Ausgabe auf der Activity erzeugen und zur Anzeige bringen
+                                Log.i(TAG4LOGGING, "Icon ID: " + _iconID);
+                                Log.i(TAG4LOGGING, "Ich bin am parsen " + temp);
 
-                        wetter.post(new Runnable() {
-                            @Override
-                            public void run() {
+                                iconSetzen(_iconID);
                                 wetter.setText(temp.toString() + "°C");
-
+                                beschreibung.setText(name);
                             }
-                        });
-                        return icon;
-                    case 502:
+                        } catch (Exception e) {
+                        }
 
-                        Log.i(TAG4LOGGING, "If Schleife" + status);
-                        beschreibung.setText("Stadt nicht gefunden");
-                        return "Fehler!";
-                    default:
-                        return "Fehler!";
-
-
-                }
-
+                    }
+                });
             }
 
             /**
@@ -226,30 +213,24 @@ public class WetterActivity extends Activity {
          * *****************************************************************************************
          */
 
-
-
         //Thread starten, in dem der http Request abgesetzt wird
         MeinThread meinThread = new MeinThread(intent.getStringExtra("Ort"));
         meinThread.start();
 
 
-
-
+        /**
+         * *****************************************************************************************
+         * ***START Icons abrufen und einbinden
+         * *****************************************************************************************
+         */
 
     }
-
-    /**
-     * *****************************************************************************************
-     * ***START Icons abrufen und einbinden
-     * *****************************************************************************************
-     */
-
 
     public void iconSetzen(String i) {
         switch (i) {
             case "01d":
                 icon.setImageResource(R.drawable.x01d);
-                 break;
+                break;
             case "01n":
                 icon.setImageResource(R.drawable.x01n);
                 break;
@@ -301,12 +282,13 @@ public class WetterActivity extends Activity {
             case "50n":
                 icon.setImageResource(R.drawable.x50n);
                 break;
+            case "internet":
+                icon.setImageResource(R.drawable.ni);
             default:
                 icon.setImageResource(R.drawable.q);
                 break;
         }
     }
-
 
     /**
      * *****************************************************************************************

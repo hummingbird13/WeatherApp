@@ -15,7 +15,6 @@
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
         android:layout_alignParentBottom="true"
-        android:hint="@string/app_name"
         android:textSize="40sp"
         android:layout_marginBottom="60sp"/>
 
