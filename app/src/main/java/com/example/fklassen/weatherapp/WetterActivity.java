@@ -1,6 +1,8 @@
 package com.example.fklassen.weatherapp;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
@@ -58,7 +60,7 @@ public class WetterActivity extends Activity {
 
         Log.i(TAG4LOGGING, "intent "+ ort);
 
-        beschreibung.setText(ort.toString());
+
 
 
 
@@ -86,7 +88,7 @@ public class WetterActivity extends Activity {
                     jsonResponse = holeDatenVonAPI(_ort);
                     iconSetzen(parseJSON(jsonResponse));
 
-                    Log.i(TAG4LOGGING, "Icon gesetzt");
+                    Log.i(TAG4LOGGING, "Icon gesetzt" + icon);
 
                 }catch(Exception e){
                     //TODO: Exception behandeln
@@ -134,7 +136,7 @@ public class WetterActivity extends Activity {
                 HttpRequest httpRequest = requestFactory.buildGetRequest(url);
                 Log.i(TAG4LOGGING, "httpRequest deklariert");
                 HttpResponse httpResponse = httpRequest.execute();
-                Log.i(TAG4LOGGING, "httpRequest execute");
+                Log.i(TAG4LOGGING, "httpRequest execute" + httpRequest);
 
 
                 //Schritt 4: Antwort-String (JSON-Format) zurückgeben
@@ -163,36 +165,49 @@ public class WetterActivity extends Activity {
 
             public String parseJSON(String jsonString) throws Exception {
 
-                //Temperatur holen
+                //cod holen
                 JSONObject jsonObject = new JSONObject(jsonString);
+                final Integer status = jsonObject.getInt("cod");
+
+                Log.i(TAG4LOGGING, "If Schleife3 " + status);
 
 
+                switch (status) {
+                    case 200:
+                        final String name = jsonObject.getString("name");
+                        beschreibung.setText(name);
 
-                JSONObject mainObj = jsonObject.getJSONObject("main");
-                final Integer temp = mainObj.getInt("temp");
+                        JSONObject mainObj = jsonObject.getJSONObject("main");
+                        final Integer temp = mainObj.getInt("temp");
 
-                JSONArray weatherArray = jsonObject.getJSONArray("weather");
-                JSONObject weatherObj = weatherArray.getJSONObject(0);
-                final String icon = weatherObj.getString("icon");
+                        JSONArray weatherArray = jsonObject.getJSONArray("weather");
+                        JSONObject weatherObj = weatherArray.getJSONObject(0);
+                        final String icon = weatherObj.getString("icon");
 
-                Log.i(TAG4LOGGING, "Icon ID: "+ icon);
+                        Log.i(TAG4LOGGING, "Icon ID: " + icon);
+                        Log.i(TAG4LOGGING, "Ich bin am parsen " + temp);
+                        //TODO: gesuchte Attribute Abfragen
+
+                        //TODO: String für die Ausgabe auf der Activity erzeugen und zur Anzeige bringen
+
+                        wetter.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                wetter.setText(temp.toString() + "°C");
+
+                            }
+                        });
+                        return icon;
+                    case 502:
+
+                        Log.i(TAG4LOGGING, "If Schleife" + status);
+                        beschreibung.setText("Stadt nicht gefunden");
+                        return "Fehler!";
+                    default:
+                        return "Fehler!";
 
 
-                Log.i(TAG4LOGGING, "Ich bin am parsen "+temp);
-                //TODO: gesuchte Attribute Abfragen
-
-                //TODO: String für die Ausgabe auf der Activity erzeugen und zur Anzeige bringen
-
-                wetter.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        wetter.setText(temp.toString() + "°C");
-
-                    }
-                });
-                return icon;
-
-
+                }
 
             }
 
@@ -287,8 +302,7 @@ public class WetterActivity extends Activity {
                 icon.setImageResource(R.drawable.x50n);
                 break;
             default:
-                //Was passiert, wenn kein Code kommt?
-                //icon.setImageResource(R.drawable.x01d);
+                icon.setImageResource(R.drawable.q);
                 break;
         }
     }
