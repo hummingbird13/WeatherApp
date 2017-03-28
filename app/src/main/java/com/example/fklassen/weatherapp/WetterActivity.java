@@ -93,9 +93,16 @@ public class WetterActivity extends Activity {
 
                     //TODO: Hier die Internetverbindung abfragen, bzw. behandeln?
                     Log.e("App_Err", Log.getStackTraceString(e));
-                    Log.i(TAG4LOGGING, "Internet nicht erhalten");
+                    Log.i(TAG4LOGGING, "catch Block");
                     //iconSetzen("internet");
-                    wetter.setText("Bitte prüfen deine Internetverbindung");
+                    wetter.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            wetter.setText("Bitte prüfen Sie ihre Internetverbindung");
+                            iconSetzen("internet");
+                        }
+                    });
+
                 }
             }
             /**
