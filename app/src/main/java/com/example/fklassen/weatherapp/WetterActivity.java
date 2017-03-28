@@ -86,20 +86,19 @@ public class WetterActivity extends Activity {
                     Log.i(TAG4LOGGING, "Im Thread");
                     jsonResponse = holeDatenVonAPI(_ort);
                     parseJSON(jsonResponse);
-
                     Log.i(TAG4LOGGING, "Icon gesetzt" + icon);
 
                 } catch (Exception e) {
 
-                    //TODO: Hier die Internetverbindung abfragen, bzw. behandeln?
                     Log.e("App_Err", Log.getStackTraceString(e));
                     Log.i(TAG4LOGGING, "catch Block");
-                    //iconSetzen("internet");
                     wetter.post(new Runnable() {
                         @Override
                         public void run() {
                             wetter.setText("Bitte prüfen Sie ihre Internetverbindung");
-                            iconSetzen("internet");
+                            _iconID = "404";
+                            Log.i(TAG4LOGGING, "Catch " + _iconID);
+                            iconSetzen(_iconID);
                         }
                     });
 
@@ -178,7 +177,9 @@ public class WetterActivity extends Activity {
 
                             if (status != 200) {
                                 _iconID = "Fehler!";
+                                Log.i(TAG4LOGGING, "IF " + _iconID);
                                 iconSetzen(_iconID);
+
                                 beschreibung.setText("Stadt nicht gefunden");
                             } else {
                                 final String name = jsonObject.getString("name");
@@ -191,7 +192,7 @@ public class WetterActivity extends Activity {
 
                                 _iconID = weatherObj.getString("icon");
 
-                                Log.i(TAG4LOGGING, "Icon ID: " + _iconID);
+                                Log.i(TAG4LOGGING, "Icon ID else: " + _iconID);
                                 Log.i(TAG4LOGGING, "Ich bin am parsen " + temp);
 
                                 iconSetzen(_iconID);
@@ -289,8 +290,9 @@ public class WetterActivity extends Activity {
             case "50n":
                 icon.setImageResource(R.drawable.x50n);
                 break;
-            case "internet":
+            case "404":
                 icon.setImageResource(R.drawable.ni);
+                break;
             default:
                 icon.setImageResource(R.drawable.q);
                 break;
