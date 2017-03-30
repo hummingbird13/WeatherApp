@@ -88,9 +88,21 @@ public class WetterActivity extends Activity {
                     parseJSON(jsonResponse);
                     Log.i(TAG4LOGGING, "Icon gesetzt" + icon);
 
-                } catch (Exception e) {
+                } catch (JSONException e) {
+                    Log.i(TAG4LOGGING, "catch Block");
+                    wetter.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            wetter.setText("Bitte prüfen Sie ihre Internetverbindung");
+                            _iconID = "404";
+                            Log.i(TAG4LOGGING, "Catch " + _iconID);
+                            iconSetzen(_iconID);
+                        }
+                    });
 
-                    Log.e("App_Err", Log.getStackTraceString(e));
+                }
+
+                catch (IOException e) {
                     Log.i(TAG4LOGGING, "catch Block");
                     wetter.post(new Runnable() {
                         @Override
@@ -110,7 +122,7 @@ public class WetterActivity extends Activity {
              * *****************************************************************************************
              */
 
-            public String holeDatenVonAPI(String ort) throws Exception {
+            public String holeDatenVonAPI(String ort) throws IOException {
 
                 Log.i(TAG4LOGGING, "In holeDatenVonAPI Methode");
 
@@ -161,7 +173,7 @@ public class WetterActivity extends Activity {
              * *****************************************************************************************
              */
 
-            public void parseJSON(final String jsonString) throws Exception {
+            public void parseJSON(final String jsonString) throws JSONException {
 
                 //cod holen
                 //JSONObject jsonObject = new JSONObject(jsonString);
@@ -198,6 +210,8 @@ public class WetterActivity extends Activity {
                                 iconSetzen(_iconID);
                                 wetter.setText(temp.toString() + "°C");
                                 beschreibung.setText(name);
+
+                                //nur UI Zugriffe in post
                             }
                         } catch (Exception e) {
                         }
