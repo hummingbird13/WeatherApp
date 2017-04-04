@@ -29,9 +29,6 @@ import org.w3c.dom.Text;
 import java.io.IOException;
 import java.net.UnknownHostException;
 
-/**
- * Created by fklassen on 22.03.2017.
- */
 
 public class WetterActivity extends Activity {
 
@@ -87,27 +84,28 @@ public class WetterActivity extends Activity {
                     jsonResponse = holeDatenVonAPI(_ort);
                     parseJSON(jsonResponse);
                     Log.i(TAG4LOGGING, "Icon gesetzt" + icon);
-
-                } catch (JSONException e) {
-                    Log.i(TAG4LOGGING, "catch Block");
+                }
+                catch (JSONException e) {
+                    String _message = e.getMessage();
+                    Log.i(TAG4LOGGING, "JSON Exception: " + _message);
                     wetter.post(new Runnable() {
                         @Override
                         public void run() {
-                            wetter.setText("Bitte prüfen Sie ihre Internetverbindung");
-                            _iconID = "404";
+                            wetter.setText("Da ist was schief gelaufen");
+                            _iconID = "Fehler!";
                             Log.i(TAG4LOGGING, "Catch " + _iconID);
                             iconSetzen(_iconID);
                         }
                     });
 
                 }
-
                 catch (IOException e) {
-                    Log.i(TAG4LOGGING, "catch Block");
+                    String _message = e.getMessage();
+                    Log.i(TAG4LOGGING, "IOException: " + _message);
                     wetter.post(new Runnable() {
                         @Override
                         public void run() {
-                            wetter.setText("Bitte prüfen Sie ihre Internetverbindung");
+                            wetter.setText("No Internet");
                             _iconID = "404";
                             Log.i(TAG4LOGGING, "Catch " + _iconID);
                             iconSetzen(_iconID);
@@ -175,50 +173,47 @@ public class WetterActivity extends Activity {
 
             public void parseJSON(final String jsonString) throws JSONException {
 
-                //cod holen
-                //JSONObject jsonObject = new JSONObject(jsonString);
-                //final Integer status = jsonObject.getInt("cod");
+                JSONObject jsonObject = new JSONObject(jsonString);
+                final Integer status = jsonObject.getInt("cod");
+                final String name = jsonObject.getString("name");
+
+                JSONObject mainObj = jsonObject.getJSONObject("main");
+                final Integer temp = mainObj.getInt("temp");
+
+                JSONArray weatherArray = jsonObject.getJSONArray("weather");
+                JSONObject weatherObj = weatherArray.getJSONObject(0);
+
+                _iconID = weatherObj.getString("icon");
+
+                Log.i(TAG4LOGGING, "Icon ID else: " + _iconID);
+                Log.i(TAG4LOGGING, "Ich bin am parsen " + temp);
+
+
+                /**
+                 * *****************************************************************************************
+                 * ***ENDE JSON parsen
+                 * *****************************************************************************************
+                 */
+
+                //
+
+
+                //UI befüllen
 
                 wetter.post(new Runnable() {
-                    @Override
-                    public void run() {
+                                @Override
+                                public void run() {
 
-                        try {
-                            JSONObject jsonObject = new JSONObject(jsonString);
-                            final Integer status = jsonObject.getInt("cod");
+                                    iconSetzen(_iconID);
+                                    wetter.setText(temp.toString() + "°C");
+                                    beschreibung.setText(name);
 
-                            if (status != 200) {
-                                _iconID = "Fehler!";
-                                Log.i(TAG4LOGGING, "IF " + _iconID);
-                                iconSetzen(_iconID);
-
-                                beschreibung.setText("Stadt nicht gefunden");
-                            } else {
-                                final String name = jsonObject.getString("name");
-
-                                JSONObject mainObj = jsonObject.getJSONObject("main");
-                                final Integer temp = mainObj.getInt("temp");
-
-                                JSONArray weatherArray = jsonObject.getJSONArray("weather");
-                                JSONObject weatherObj = weatherArray.getJSONObject(0);
-
-                                _iconID = weatherObj.getString("icon");
-
-                                Log.i(TAG4LOGGING, "Icon ID else: " + _iconID);
-                                Log.i(TAG4LOGGING, "Ich bin am parsen " + temp);
-
-                                iconSetzen(_iconID);
-                                wetter.setText(temp.toString() + "°C");
-                                beschreibung.setText(name);
-
-                                //nur UI Zugriffe in post
-                            }
-                        } catch (Exception e) {
-                        }
-
-                    }
+                                }
                 });
-            }
+
+
+
+        }
 
             /**
              * *****************************************************************************************
@@ -226,27 +221,25 @@ public class WetterActivity extends Activity {
              * *****************************************************************************************
              */
 
-            //
-        }
-
         /*
          * *****************************************************************************************
          * ***ENDE innere Klasse MeinTread
          * *****************************************************************************************
          */
 
+        }
+
         //Thread starten, in dem der http Request abgesetzt wird
         MeinThread meinThread = new MeinThread(intent.getStringExtra("Ort"));
         meinThread.start();
 
-
-        /**
-         * *****************************************************************************************
-         * ***START Icons abrufen und einbinden
-         * *****************************************************************************************
-         */
-
     }
+
+    /**
+     * *****************************************************************************************
+     * ***START Icons abrufen und einbinden
+     * *****************************************************************************************
+     */
 
     public void iconSetzen(String i) {
         switch (i) {
