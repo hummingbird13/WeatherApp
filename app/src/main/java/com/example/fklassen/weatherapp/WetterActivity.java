@@ -1,14 +1,8 @@
 package com.example.fklassen.weatherapp;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.Icon;
-import android.media.Image;
 import android.os.Bundle;
-import android.support.annotation.DrawableRes;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -19,201 +13,123 @@ import com.google.api.client.http.HttpRequestFactory;
 import com.google.api.client.http.HttpResponse;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.repackaged.com.google.common.base.Throwables;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.w3c.dom.Text;
 
 import java.io.IOException;
-import java.net.UnknownHostException;
 
 
 public class WetterActivity extends Activity {
 
 
-    public static final String TAG4LOGGING = "Pupsgesicht";
+    public static final String TAG4LOGGING = "Note";
     public static final String key_API = "31f9d45c5d615fabdac3b88c54c9b7b2";
     public static final String units = "metric";
-
-
 
     //Member Variablen
     protected TextView wetter;
     protected TextView beschreibung;
     protected ImageView icon;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_wetter);
+    /**
+     * *****************************************************************************************
+     * ***START innere Klasse MeinTread - RUN Methode
+     * *****************************************************************************************
+     */
 
-        Log.i(TAG4LOGGING, "Willkommen in activity 2");
+    class MeinThread extends Thread {
+        protected String _ort;
+        protected String jsonResponse;
+        protected String _iconID;
 
-        wetter = (TextView) findViewById(R.id.wetter);
-        beschreibung = (TextView) findViewById(R.id.beschreibung);
-        icon = (ImageView) findViewById(R.id.icon);
+        public MeinThread(String _location) {
+            _ort = _location;
 
+        }
 
-        Intent intent = getIntent();
-        String ort = intent.getStringExtra("Ort");
-
-        Log.i(TAG4LOGGING, "intent " + ort);
+        @Override
+        public void run() {
+            try {
+                jsonResponse = holeDatenVonAPI(_ort);
+                parseJSON(jsonResponse);
+                Log.i(TAG4LOGGING, "Icon gesetzt" + icon);
+            } catch (Exception e) {
+                Log.getStackTraceString(e);
+                wetter.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        wetter.setText("Da ist was schief gelaufen");
+                        _iconID = "Fehler!";
+                        iconSetzen(_iconID);
+                    }
+                });
+            }
+        }
 
         /**
          * *****************************************************************************************
-         * ***START innere Klasse MeinTread - RUN Methode
+         * ***Start JSON abholen
          * *****************************************************************************************
          */
 
-        class MeinThread extends Thread {
-            protected String _ort;
-            protected String jsonResponse;
-            protected String _iconID;
+        public String holeDatenVonAPI(String ort) throws IOException {
 
-            public MeinThread(String _location) {
-                _ort = _location;
+            Log.i(TAG4LOGGING, "In holeDatenVonAPI Methode");
 
-            }
+            //Schritt 1: Request Factory holen
+            HttpTransport httpTransport = new NetHttpTransport();
+            HttpRequestFactory requestFactory = httpTransport.createRequestFactory();
 
-            @Override
-            public void run() {
-                try {
-                    Log.i(TAG4LOGGING, "Im Thread");
-                    jsonResponse = holeDatenVonAPI(_ort);
-                    parseJSON(jsonResponse);
-                    Log.i(TAG4LOGGING, "Icon gesetzt" + icon);
-                }
-                catch (JSONException e) {
-                    String _message = e.getMessage();
-                    Log.i(TAG4LOGGING, "JSON Exception: " + _message);
-                    wetter.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            wetter.setText("Da ist was schief gelaufen");
-                            _iconID = "Fehler!";
-                            Log.i(TAG4LOGGING, "Catch " + _iconID);
-                            iconSetzen(_iconID);
-                        }
-                    });
+            //Schritt 2: URL erzeugen und Parameter hinzufügen
+            GenericUrl url = new GenericUrl("http://api.openweathermap.org/data/2.5/weather");
+            url.put("q", ort);
+            url.put("units", units);
+            url.put("APPID", key_API);
+            Log.i(TAG4LOGGING, "URL erzeugt: " + url);
 
-                }
-                catch (IOException e) {
-                    String _message = e.getMessage();
-                    Log.i(TAG4LOGGING, "IOException: " + _message);
-                    wetter.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            wetter.setText("No Internet");
-                            _iconID = "404";
-                            Log.i(TAG4LOGGING, "Catch " + _iconID);
-                            iconSetzen(_iconID);
-                        }
-                    });
+            //Schritt 3: Absetzen des Requests
+            HttpRequest httpRequest = requestFactory.buildGetRequest(url);
+            HttpResponse httpResponse = httpRequest.execute();
+            Log.i(TAG4LOGGING, "httpRequest execute" + httpRequest);
 
-                }
-            }
-            /**
-             * *****************************************************************************************
-             * ***Start JSON abholen
-             * *****************************************************************************************
-             */
+            //Schritt 4: Antwort-String (JSON-Format) zurÃ¼ckgeben
+            String jsonResponseString = httpResponse.parseAsString();
+            Log.i(TAG4LOGGING, "JSON-String erhalten: " + jsonResponseString);
 
-            public String holeDatenVonAPI(String ort) throws IOException {
-
-                Log.i(TAG4LOGGING, "In holeDatenVonAPI Methode");
-
-                //Schritt 1: Request Factory holen
-                HttpTransport httpTransport = new NetHttpTransport();
-                HttpRequestFactory requestFactory = httpTransport.createRequestFactory();
-
-                Log.i(TAG4LOGGING, "Schritt 1 beendet");
-
-                //Schritt 2: URL erzeugen und Parameter hinzufÃ¼gen
-                //Link: api.openweathermap.org/data/2.5/weather?q=City&units=metric&APPID=31f9d45c5d615fabdac3b88c54c9b7b2
-
-                GenericUrl url = new GenericUrl("http://api.openweathermap.org/data/2.5/weather");
-                Log.i(TAG4LOGGING, "Generic Url beendet" + url);
-                url.put("q", ort);
-                Log.i(TAG4LOGGING, "q " + ort);
-                url.put("units", units);
-                Log.i(TAG4LOGGING, "units " + units);
-                url.put("APPID", key_API);
-                Log.i(TAG4LOGGING, "APPID " + key_API);
-                Log.i(TAG4LOGGING, "URL erzeugt: " + url);
-
-                //Schritt 3: Absetzen des Requests
-                HttpRequest httpRequest = requestFactory.buildGetRequest(url);
-                Log.i(TAG4LOGGING, "httpRequest deklariert");
-                HttpResponse httpResponse = httpRequest.execute();
-                Log.i(TAG4LOGGING, "httpRequest execute" + httpRequest);
-
-
-                //Schritt 4: Antwort-String (JSON-Format) zurÃ¼ckgeben
-                String jsonResponseString = httpResponse.parseAsString();
-
-                Log.i(TAG4LOGGING, "JSON-String erhalten: " + jsonResponseString);
-
-                return jsonResponseString;
-            }
-
-            /**
-             * *****************************************************************************************
-             * ***ENDE JSON abholen
-             * *****************************************************************************************
-             */
-
-
-            /**
-             * *****************************************************************************************
-             * ***START JSON parsen
-             * *****************************************************************************************
-             */
-
-            public void parseJSON(final String jsonString) throws JSONException {
-
-                JSONObject jsonObject = new JSONObject(jsonString);
-                final Integer status = jsonObject.getInt("cod");
-                final String name = jsonObject.getString("name");
-
-                JSONObject mainObj = jsonObject.getJSONObject("main");
-                final Integer temp = mainObj.getInt("temp");
-
-                JSONArray weatherArray = jsonObject.getJSONArray("weather");
-                JSONObject weatherObj = weatherArray.getJSONObject(0);
-
-                _iconID = weatherObj.getString("icon");
-
-                Log.i(TAG4LOGGING, "Icon ID else: " + _iconID);
-                Log.i(TAG4LOGGING, "Ich bin am parsen " + temp);
-
-
-                /**
-                 * *****************************************************************************************
-                 * ***ENDE JSON parsen
-                 * *****************************************************************************************
-                 */
-
-                //
-
-
-                //UI befüllen
-
-                wetter.post(new Runnable() {
-                                @Override
-                                public void run() {
-
-                                    iconSetzen(_iconID);
-                                    wetter.setText(temp.toString() + "°C");
-                                    beschreibung.setText(name);
-
-                                }
-                });
-
-
-
+            return jsonResponseString;
         }
+
+        /**
+         * *****************************************************************************************
+         * ***ENDE JSON abholen
+         * *****************************************************************************************
+         */
+
+
+        /**
+         * *****************************************************************************************
+         * ***START JSON parsen
+         * *****************************************************************************************
+         */
+
+        public void parseJSON(final String jsonString) throws JSONException {
+
+            JSONObject jsonObject = new JSONObject(jsonString);
+            final Integer status = jsonObject.getInt("cod");
+            final String name = jsonObject.getString("name");
+
+            JSONObject mainObj = jsonObject.getJSONObject("main");
+            final Integer temp = mainObj.getInt("temp");
+
+            JSONArray weatherArray = jsonObject.getJSONArray("weather");
+            JSONObject weatherObj = weatherArray.getJSONObject(0);
+
+            _iconID = weatherObj.getString("icon");
+
+            Log.i(TAG4LOGGING, "parseJSON: " + temp);
+
 
             /**
              * *****************************************************************************************
@@ -221,18 +137,53 @@ public class WetterActivity extends Activity {
              * *****************************************************************************************
              */
 
+            //
+
+
+            //UI befüllen
+
+            wetter.post(new Runnable() {
+                @Override
+                public void run() {
+
+                    iconSetzen(_iconID);
+                    wetter.setText(temp.toString() + "°C");
+                    beschreibung.setText(name);
+                }
+            });
+        }
+
+        /**
+         * *****************************************************************************************
+         * ***ENDE JSON parsen
+         * *****************************************************************************************
+         */
+
         /*
          * *****************************************************************************************
          * ***ENDE innere Klasse MeinTread
          * *****************************************************************************************
          */
 
-        }
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_wetter);
+
+        wetter = (TextView) findViewById(R.id.wetter);
+        beschreibung = (TextView) findViewById(R.id.beschreibung);
+        icon = (ImageView) findViewById(R.id.icon);
+
+        Intent intent = getIntent();
+        String ort = intent.getStringExtra("Ort");
+
+        Log.i(TAG4LOGGING, "intent " + ort);
 
         //Thread starten, in dem der http Request abgesetzt wird
         MeinThread meinThread = new MeinThread(intent.getStringExtra("Ort"));
         meinThread.start();
-
     }
 
     /**
@@ -311,6 +262,4 @@ public class WetterActivity extends Activity {
      * ***Ende Icons abrufen und einbinden
      * *****************************************************************************************
      * */
-
-
 }
